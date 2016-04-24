@@ -39,6 +39,7 @@ func newDefaultConfig() *Config {
 		Header:         make(map[string]string, 0),
 		CORS:           &CORS{},
 		SkipUpstreamTLSVerify: true,
+		SecureCookie: true,
 	}
 }
 
@@ -202,6 +203,9 @@ func readOptions(cx *cli.Context, config *Config) (err error) {
 	}
 	if cx.IsSet("verbose") {
 		config.Verbose = cx.Bool("verbose")
+	}
+	if cx.IsSet("secure-cookie") {
+		config.SecureCookie = cx.Bool("secure-cookie")
 	}
 	if cx.IsSet("scope") {
 		config.Scopes = cx.StringSlice("scope")
@@ -427,6 +431,10 @@ func getOptions() []cli.Flag {
 		cli.BoolFlag{
 			Name:  "verbose",
 			Usage: "switch on debug / verbose logging",
+		},
+		cli.BoolFlag{
+			Name:  "secure-cookie",
+			Usage: "set to false for testing on non https servers",
 		},
 	}
 }

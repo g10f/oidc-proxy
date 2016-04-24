@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	prog        = "keycloak-proxy"
-	version     = "v1.0.2"
+	prog        = "oidc-proxy"
+	version     = "v1.0.3"
 	author      = "Rohith"
 	email       = "gambol99@gmail.com"
 	description = "is a proxy using the keycloak service for auth and authorization"
@@ -42,11 +42,9 @@ const (
 	logoutURL        = oauthURL + "/logout"
 	loginURL         = oauthURL + "/login"
 
-	claimPreferredName  = "preferred_username"
+	claimPreferredName  = "name"
 	claimAudience       = "aud"
-	claimResourceAccess = "resource_access"
-	claimRealmAccess    = "realm_access"
-	claimResourceRoles  = "roles"
+	claimRoles  = "roles"
 )
 
 var (
@@ -156,6 +154,8 @@ type Config struct {
 	Hostnames []string `json:"hostnames" yaml:"hostnames"`
 	// Store is a url for a store resource, used to hold the refresh tokens
 	StoreURL string `json:"store-url" yaml:"store-url"`
+	// Secure cookie, set to false for testing on non https server
+	SecureCookie bool `json:"verbose" yaml:"secure-cookie"`
 }
 
 // Store is used to hold the offline refresh token, assuming you don't want to use

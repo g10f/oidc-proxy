@@ -134,7 +134,7 @@ func (r *oauthProxy) authenticationHandler() gin.HandlerFunc {
 				switch err {
 				case ErrRefreshTokenExpired:
 					log.WithFields(log.Fields{"token": token}).Warningf("the refresh token has expired")
-					clearAllCookies(cx)
+					clearAllCookies(cx, r.config.SecureCookie)
 				default:
 					log.WithFields(log.Fields{"error": err.Error()}).Errorf("failed to refresh the access token")
 				}
@@ -150,7 +150,7 @@ func (r *oauthProxy) authenticationHandler() gin.HandlerFunc {
 			}).Infof("injecting refreshed access token, expires on: %s", expires.Format(time.RFC1123))
 
 			// step: clear the cookie up
-			dropAccessTokenCookie(cx, token)
+			dropAccessTokenCookie(cx, token, r.config.SecureCookie)
 
 			if r.useStore() {
 				go func(t jose.JWT, rt string) {
@@ -328,7 +328,7 @@ func (r oauthProxy) oauthCallbackHandler(cx *gin.Context) {
 	}).Infof("issuing a new access token for user, email: %s", identity.Email)
 
 	// step: drop's a session cookie with the access token
-	dropAccessTokenCookie(cx, session)
+	dropAccessTokenCookie(cx, session, r.config.SecureCookie)
 
 	// step: does the response has a refresh token and we are NOT ignore refresh tokens?
 	if r.config.EnableRefreshTokens && response.RefreshToken != "" {
@@ -352,7 +352,7 @@ func (r oauthProxy) oauthCallbackHandler(cx *gin.Context) {
 				}).Warnf("failed to save the refresh token in the store")
 			}
 		default:
-			dropRefreshTokenCookie(cx, encrypted, time.Time{})
+			dropRefreshTokenCookie(cx, encrypted, time.Time{}, r.config.SecureCookie)
 		}
 	}
 
@@ -426,7 +426,7 @@ func (r oauthProxy) logoutHandler(cx *gin.Context) {
 		return
 	}
 	// step: delete the access token
-	clearAccessTokenCookie(cx)
+	clearAccessTokenCookie(cx, r.config.SecureCookie)
 
 	log.WithFields(log.Fields{
 		"email":     user.email,
@@ -492,7 +492,7 @@ func (r oauthProxy) logoutHandler(cx *gin.Context) {
 			}).Errorf("invalid response from revocation endpoint")
 		}
 	}
-	clearAllCookies(cx)
+	clearAllCookies(cx, r.config.SecureCookie)
 
 	if redirectURL != "" {
 		r.redirectToURL(redirectURL, cx)

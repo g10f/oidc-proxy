@@ -80,25 +80,10 @@ func extractIdentity(token jose.JWT) (*userContext, error) {
 	}
 	var list []string
 
-	// step: extract the realm roles
-	if realmRoles, found := claims[claimRealmAccess].(map[string]interface{}); found {
-		if roles, found := realmRoles[claimResourceRoles]; found {
-			for _, r := range roles.([]interface{}) {
-				list = append(list, fmt.Sprintf("%s", r))
-			}
-		}
-	}
-
-	// step: extract the roles from the access token
-	if accesses, found := claims[claimResourceAccess].(map[string]interface{}); found {
-		for roleName, roleList := range accesses {
-			scopes := roleList.(map[string]interface{})
-			if roles, found := scopes[claimResourceRoles]; found {
-				for _, r := range roles.([]interface{}) {
-					list = append(list, fmt.Sprintf("%s:%s", roleName, r))
-				}
-			}
-		}
+	// step: extract the roles
+	roles, found, err := claims.StringClaim(claimRoles)
+	if found {
+		list = strings.Split(roles, " ")
 	}
 
 	return &userContext{
