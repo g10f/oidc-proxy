@@ -7,6 +7,7 @@ cover.out
 
 config.yml
 Caddyfile
+access.log
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o

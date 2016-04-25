@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	dbName = "oidc-proxy"
+	dbName = "oidc-proxy.db"
 )
 
 var (
