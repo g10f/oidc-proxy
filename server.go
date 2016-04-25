@@ -73,6 +73,8 @@ func newProxy(cfg *Config) (*oauthProxy, error) {
 	}
 	if cfg.Verbose {
 		log.SetLevel(log.DebugLevel)
+	} else {
+		gin.SetMode(gin.ReleaseMode)  // default is DebugMode
 	}
 
 	log.Infof("starting %s, version: %s, author: %s", prog, version, author)
@@ -152,7 +154,7 @@ func (r *oauthProxy) Run() error {
 	}
 
 	go func() {
-		log.Infof("keycloak proxy service starting on %s", r.config.Listen)
+		log.Infof("oidc proxy service starting on %s", r.config.Listen)
 
 		var err error
 		if r.config.TLSCertificate == "" {
@@ -303,7 +305,7 @@ func (r *oauthProxy) setupTemplates() error {
 		list = append(list, r.config.SignInPage)
 	}
 	if r.config.ForbiddenPage != "" {
-		log.Debugf("loading the custom sign forbidden page: %s", r.config.ForbiddenPage)
+		log.Debugf("loading the custom forbidden page: %s", r.config.ForbiddenPage)
 		list = append(list, r.config.ForbiddenPage)
 	}
 

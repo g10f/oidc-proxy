@@ -39,7 +39,7 @@ func newDefaultConfig() *Config {
 		Header:         make(map[string]string, 0),
 		CORS:           &CORS{},
 		SkipUpstreamTLSVerify: true,
-		SecureCookie: true,
+		SecureCookie:          true,
 	}
 }
 
@@ -287,7 +287,7 @@ func getOptions() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
 			Name:  "config",
-			Usage: "the path to the configuration file for the keycloak proxy",
+			Usage: "the path to the configuration file for the oidc proxy",
 		},
 		cli.StringFlag{
 			Name:  "listen",

@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	dbName = "keycloak"
+	dbName = "oidc-proxy"
 )
 
 var (

@@ -266,6 +266,7 @@ func (r oauthProxy) oauthCallbackHandler(cx *gin.Context) {
 	}
 
 	code := cx.Request.URL.Query().Get("code")
+	// TODO: ensure request was initiated from us with state
 	state := cx.Request.URL.Query().Get("state")
 
 	// step: ensure we have a authorization code to exchange

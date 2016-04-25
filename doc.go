@@ -25,7 +25,7 @@ const (
 	version     = "v1.0.3"
 	author      = "Rohith"
 	email       = "gambol99@gmail.com"
-	description = "is a proxy using the keycloak service for auth and authorization"
+	description = "is a proxy using an oidc service for auth and authorization"
 
 	headerUpgrade       = "Upgrade"
 	cookieAccessToken   = "kc-access"
@@ -42,9 +42,9 @@ const (
 	logoutURL        = oauthURL + "/logout"
 	loginURL         = oauthURL + "/login"
 
-	claimPreferredName  = "name"
-	claimAudience       = "aud"
-	claimRoles  = "roles"
+	claimPreferredName = "name"
+	claimAudience      = "aud"
+	claimRoles         = "roles"
 )
 
 var (
@@ -96,7 +96,7 @@ type Config struct {
 	LogRequests bool `json:"log-requests" yaml:"log-requests"`
 	// LogFormat is the logging format
 	LogJSONFormat bool `json:"log-json-format" yaml:"log-json-format"`
-	// DiscoveryURL is the url for the keycloak server
+	// DiscoveryURL is the url for the oidc server
 	DiscoveryURL string `json:"discovery-url" yaml:"discovery-url"`
 	// ClientID is the client id
 	ClientID string `json:"clientid" yaml:"clientid"`

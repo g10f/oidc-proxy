@@ -90,7 +90,7 @@ func extractIdentity(token jose.JWT) (*userContext, error) {
 		id:            identity.ID,
 		name:          preferredName,
 		audience:      audience,
-		preferredName: preferredName,
+		preferredName: preferredName, // TODO: remove
 		email:         identity.Email,
 		expiresAt:     identity.ExpiresAt,
 		roles:         list,
