@@ -1,7 +1,5 @@
-
-
-# is the url for retrieve the openid configuration - normally the <server>/auth/realm/<realm_name>
-discovery-url: https://keycloak.example.com/auth/realms/commons
+# is the url for retrieve the openid configuration - normally the <server>/.well-known/openid-configuration
+discovery-url: https://sso.dwbn.org/.well-known/openid-configuration
 # the client id for the 'client' application
 clientid: <CLIENT_ID>
 # the secret associated to the 'client' application
@@ -14,6 +12,8 @@ enable-refresh-tokens: true
 log-requests: true
 # log in json format
 log-json-format: true
+# debug output
+verbose: true
 # do not redirec the request, simple 307 it
 no-redirects: false
 # the location of a certificate you wish the proxy to use for TLS support
@@ -22,6 +22,8 @@ tls-cert:
 tls-private-key:
 # the public key for the ca, used for mutual TLS
 tls-ca-certificate:
+# Secure cookie true or false, default is true, so https is required
+secure-cookie:
 # the redirection url, essentially the site url, note: /oauth/callback is added at the end
 redirection-url: http://127.0.0.3000
 # the encryption key used to encode the session state
@@ -32,14 +34,15 @@ upstream: http://127.0.0.1:80
 upstream-keepalives: true
 # additional scopes to add to add to the default (openid+email+profile)
 scopes:
-  - vpn-user
-# enables a more extra secuirty features
+  - picture
+  - offline_access
+# enables a more extra security features
 enable-security-filter: true
 # a map of claims that MUST exist in the token presented and the value is it MUST match
 # So for example, you could match the audience or the issuer or some custom attribute
 claims:
-  aud: openvpn
-  iss: https://keycloak.example.com/auth/realms/commons
+  aud: <CLIENT_ID>
+  iss: https://sso.dwbn.org
 # a collection of resource i.e. urls that you wish to protect
 resources:
   - url: /admin/test
@@ -48,8 +51,7 @@ resources:
       - GET
     # a list of roles the user must have in order to accces urls under the above
     roles:
-      - openvpn:vpn-user
-      - openvpn:prod-vpn
+      - AdminTest
   - url: /admin/white_listed
     # permits a url prefix through, bypassing the admission controls
     white-listed: true
@@ -57,8 +59,7 @@ resources:
     methods:
       - GET
     roles:
-      - openvpn:vpn-user
-      - openvpn:prod-vpn
+      - Admin
 
 # set the cross origin resource sharing headers
 cors:

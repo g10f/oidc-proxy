@@ -40,6 +40,9 @@ func newDefaultConfig() *Config {
 		CORS:           &CORS{},
 		SkipUpstreamTLSVerify: true,
 		SecureCookie:          true,
+		DiscoveryURL: "https://sso.dwbn.org/.well-known/openid-configuration",
+		ForbiddenPage: "templates/forbidden.html.tmpl",
+		Resources: []*Resource{&Resource{URL: "/"}},
 	}
 }
 

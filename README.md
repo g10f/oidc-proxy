@@ -1,7 +1,4 @@
-[![Build Status](https://travis-ci.org/gambol99/keycloak-proxy.svg?branch=master)](https://travis-ci.org/gambol99/keycloak-proxy)
-[![GoDoc](http://godoc.org/github.com/gambol99/keycloak-proxy?status.png)](http://godoc.org/github.com/gambol99/keycloak-proxy)
-
-### **Keycloak Proxy**
+### **OIDC Proxy**
 ----
 
   - Supports role based uri controls
@@ -14,10 +11,10 @@
 
 ----
 
-Keycloak-proxy is a proxy service which at the risk of stating the obvious integrates with the [Keycloak](https://github.com/keycloak/keycloak) authentication service. Although technically the service has no dependency on Keycloak itself and would quite happily work with any OpenID provider. The service supports both access tokens in browser cookie or bearer tokens.
+oidc-proxy is a proxy service which integrates with the [DWBN-SSO](https://sso.dwbn.org/) authentication service. Although technically the service has no dependency on DWBN-SSO itself and would quite happily work with any OpenID provider. The service supports both access tokens in browser cookie or bearer tokens.
 
 ```shell
-[jest@starfury keycloak-proxy]$ bin/keycloak-proxy help
+$ bin/keycloak-proxy help
 NAME:
    keycloak-proxy - is a proxy using the keycloak service for auth and authorization
 
@@ -25,7 +22,7 @@ USAGE:
    keycloak-proxy [global options] command [command options] [arguments...]
 
 VERSION:
-   v1.0.2
+   v1.0.3
 
 AUTHOR(S):
    Rohith <gambol99@gmail.com>
@@ -78,30 +75,49 @@ GLOBAL OPTIONS:
 The configuration can come from a yaml/json file and or the command line options (note, command options have a higher priority and will override any options referenced in a config file)
 
 ```YAML
-# is the url for retrieve the openid configuration - normally the <server>/auth/realm/<realm_name>
-discovery-url: https://keycloak.example.com/auth/realms/<REALM_NAME>
+# is the url for retrieve the openid configuration - normally the <server>/.well-known/openid-configuration
+discovery-url: https://sso.dwbn.org/.well-known/openid-configuration
 # the client id for the 'client' application
 clientid: <CLIENT_ID>
 # the secret associated to the 'client' application
-secret: <CLIENT_SECRET>
+client-secret: <CLIENT_SECRET>
 # the interface definition you wish the proxy to listen, all interfaces is specified as ':<port>'
 listen: 127.0.0.1:3000
-# whether to enable refresh tokens
-enable-refresh-token: true
+# whether to request offline access and use a refresh token
+enable-refresh-tokens: true
+# log all incoming requests
+log-requests: true
+# log in json format
+log-json-format: true
+# debug output
+verbose: true
+# do not redirec the request, simple 307 it
+no-redirects: false
 # the location of a certificate you wish the proxy to use for TLS support
 tls-cert:
 # the location of a private key for TLS
 tls-private-key:
+# the public key for the ca, used for mutual TLS
+tls-ca-certificate:
 # the redirection url, essentially the site url, note: /oauth/callback is added at the end
 redirection-url: http://127.0.0.3000
 # the encryption key used to encode the session state
-encryption-key: <ENCRYPTION_KEY>
+encryption-key: vGcLt8ZUdPX5fXhtLZaPHZkGWHZrT6T8xKHWf5RPfqAocuiQ6nUbNHyc3oF2toO2tr
 # the upstream endpoint which we should proxy request
 upstream: http://127.0.0.1:80
+# upstream-keepalives specified wheather you want keepalive on the upstream endpoint
+upstream-keepalives: true
 # additional scopes to add to add to the default (openid+email+profile)
 scopes:
-  - vpn-user
-
+  - picture
+  - offline_access
+# enables a more extra security features
+enable-security-filter: true
+# a map of claims that MUST exist in the token presented and the value is it MUST match
+# So for example, you could match the audience or the issuer or some custom attribute
+claims:
+  aud: <CLIENT_ID>
+  iss: https://sso.dwbn.org
 # a collection of resource i.e. urls that you wish to protect
 resources:
   - url: /admin/test
@@ -110,15 +126,32 @@ resources:
       - GET
     # a list of roles the user must have in order to accces urls under the above
     roles:
-      - openvpn:vpn-user
-      - openvpn:prod-vpn
-      - test
+      - AdminTest
+  - url: /admin/white_listed
+    # permits a url prefix through, bypassing the admission controls
+    white-listed: true
   - url: /admin
     methods:
       - GET
     roles:
-      - openvpn:vpn-user
-      - openvpn:commons-prod-vpn
+      - Admin
+
+# set the cross origin resource sharing headers
+cors:
+  # an array of origins (Access-Control-Allow-Origin)
+  origins: []
+  # an array of headers to apply (Access-Control-Allow-Headers)
+  headers: []
+  # an array of expose headers (Access-Control-Expose-Headers)
+  exposed-headers: []
+  # an array of methods (Access-Control-Allow-Methods)
+  methods: []
+  # the credentials flag (Access-Control-Allow-Credentials)
+  credentials: true|false
+  # the max age (Access-Control-Max-Age)
+  max-age: 1h
+
+
 ```
 
 #### **Example Usage**
@@ -133,7 +166,7 @@ d) Create the various roles under the client or existing clients for authorizati
 **The default config**
 
 ```YAML
-discovery_url: https://keycloak.example.com/auth/realms/<REALM_NAME>
+discovery_url: https://sso.dwbn.org/.well-known/openid-configuration
 clientid: <CLIENT_ID>
 client-secret: <CLIENT_SECRET>
 listen: 127.0.0.1:3000
@@ -147,18 +180,17 @@ resources:
     methods:
       - GET
     roles:
-      - client:test1
-      - client:test2
+      - Admin
   - url: /backend
     roles:
-      - client:test1
+      - User
 ```
 
 Note, anything defined in the configuration file can also be configured as command line options, so the above would be reflected as;
 
 ```shell
 bin/keycloak-proxy \
-    --discovery-url=https://keycloak.example.com/auth/realms/<REALM_NAME> \
+    --discovery-url=https://sso.dwbn.org/.well-known/openid-configuration \
     --client-id=<CLIENT_ID> \
     --client-secret=<SECRET> \
     --listen=127.0.0.1:3000 \
@@ -172,7 +204,7 @@ bin/keycloak-proxy \
 
 #### **Google OpenID**
 
-Although the role extensions do require a Keycloak IDP or at the very least a IDP that produces a token which contains roles, there's nothing stopping you from using it against any OpenID providers, such as Google. Go to the Google Developers Console and create a new application *(via "Enable and Manage APIs -> Credentials)*. Once you've created the application, take the client id, secret and make sure you've added the callback url to the application scope *(using the default this would be http://127.0.0.1:3000/oauth/callback)*
+Although the role extensions do require a DWBN-SSO IDP or at the very least a IDP that produces a token which contains roles, there's nothing stopping you from using it against any OpenID providers, such as Google. Go to the Google Developers Console and create a new application *(via "Enable and Manage APIs -> Credentials)*. Once you've created the application, take the client id, secret and make sure you've added the callback url to the application scope *(using the default this would be http://127.0.0.1:3000/oauth/callback)*
 
 ``` shell
 bin/keycloak-proxy \
@@ -249,8 +281,8 @@ fix this by fixing up the paths, you can add excepts to the protected resources.
     methods:
       - GET
     roles:
-      - <CLIENT_APP_NAME>:<ROLE_NAME>
-      - <CLIENT_APP_NAME>:<ROLE_NAME>
+      - <ROLE_NAME1>
+      - <ROLE_NAME2>
 ```
 
 Or on the command line
