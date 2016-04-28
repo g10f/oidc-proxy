@@ -11,7 +11,7 @@
 
 ----
 
-oidc-proxy is a proxy service which integrates with the [DWBN-SSO](https://sso.dwbn.org/) authentication service. Although technically the service has no dependency on DWBN-SSO itself and would quite happily work with any OpenID provider. The service supports both access tokens in browser cookie or bearer tokens.
+oidc-proxy is a proxy service which integrates with the OpenID Connect Identity Provider authentication service. The service supports both access tokens in browser cookie or bearer tokens.
 
 ```shell
 $ bin/keycloak-proxy help
@@ -76,7 +76,7 @@ The configuration can come from a yaml/json file and or the command line options
 
 ```YAML
 # is the url for retrieve the openid configuration - normally the <server>/.well-known/openid-configuration
-discovery-url: https://sso.dwbn.org/.well-known/openid-configuration
+discovery-url: https://sso.example.org/.well-known/openid-configuration
 # the client id for the 'client' application
 clientid: <CLIENT_ID>
 # the secret associated to the 'client' application
@@ -117,7 +117,7 @@ enable-security-filter: true
 # So for example, you could match the audience or the issuer or some custom attribute
 claims:
   aud: <CLIENT_ID>
-  iss: https://sso.dwbn.org
+  iss:  https://sso.example.org
 # a collection of resource i.e. urls that you wish to protect
 resources:
   - url: /admin/test
@@ -166,7 +166,7 @@ d) Create the various roles under the client or existing clients for authorizati
 **The default config**
 
 ```YAML
-discovery_url: https://sso.dwbn.org/.well-known/openid-configuration
+discovery_url:  https://sso.example.org/.well-known/openid-configuration
 clientid: <CLIENT_ID>
 client-secret: <CLIENT_SECRET>
 listen: 127.0.0.1:3000
@@ -190,7 +190,7 @@ Note, anything defined in the configuration file can also be configured as comma
 
 ```shell
 bin/keycloak-proxy \
-    --discovery-url=https://sso.dwbn.org/.well-known/openid-configuration \
+    --discovery-url= https://sso.example.org/.well-known/openid-configuration \
     --client-id=<CLIENT_ID> \
     --client-secret=<SECRET> \
     --listen=127.0.0.1:3000 \
@@ -306,12 +306,43 @@ Refresh tokens are either be stored as an encrypted cookie or placed (encrypted)
 
 Assuming access response responds with a refresh token and the --enable-refresh-token is true, the proxy will automatically refresh the access token for you. The tokens themselves are kept either as an encrypted (--encryption-key=KEY) cookie (cookie name: kc-state). Alternatively you can place the refresh token (still requires encryption key) in a local boltdb file or shared redis. Naturally the encryption key has to be the same on all instances and boltdb is for single instance only developments.
 
-#### **Endpoints**
+#### **- Cross Origin Resource Sharing (CORS)**
+
+You are permitted to add CORS following headers into the /oauth uri namespace
+
+ * Access-Control-Allow-Origin
+ * Access-Control-Allow-Methods
+ * Access-Control-Allow-Headers
+ * Access-Control-Expose-Headers
+ * Access-Control-Allow-Credentials
+ * Access-Control-Max-Age
+
+Either from the config file:
+
+```YAML
+cors:
+  origins:
+  - '*'
+  methods:
+  - GET
+  - POST
+```
+
+or via the command line arguments
+
+```shell
+--cors-origins [--cors-origins option]                  a set of origins to add to the CORS access control (Access-Control-Allow-Origin)
+--cors-methods [--cors-methods option]                  the method permitted in the access control (Access-Control-Allow-Methods)
+--cors-headers [--cors-headers option]                  a set of headers to add to the CORS access control (Access-Control-Allow-Headers)
+--cors-exposes-headers [--cors-exposes-headers option]  set the expose cors headers access control (Access-Control-Expose-Headers)
+```
+
+#### **- Endpoints**
 
 * **/oauth/authorize** is authentication endpoint which will generate the openid redirect to the provider
 * **/oauth/callback** is provider openid callback endpoint
 * **/oauth/expired** is a helper endpoint to check if a access token has expired, 200 for ok and, 401 for no token and 401 for expired
-* **/oauth/token** is a helper endpoint which will display the current access token for you
 * **/oauth/health** is the health checking endpoint for the proxy
-* **/oauth/logout** provides a convenient endpoint to log the user out, it will always attempt to perform a back channel logout of offline tokens
 * **/oauth/login** provides a relay endpoint to login via grant_type=password i.e. POST /oauth/login?username=USERNAME&password=PASSWORD
+* **/oauth/logout** provides a convenient endpoint to log the user out, it will always attempt to perform a back channel logout of offline tokens
+* **/oauth/token** is a helper endpoint which will display the current access token for you

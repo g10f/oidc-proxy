@@ -28,8 +28,8 @@ const (
 	description = "is a proxy using an oidc service for auth and authorization"
 
 	headerUpgrade       = "Upgrade"
-	cookieAccessToken   = "kc-access"
-	cookieRefreshToken  = "kc-state"
+	cookieAccessToken   = "oidc-access"
+	cookieRefreshToken  = "oidc-state"
 	userContextName     = "identity"
 	authorizationHeader = "Authorization"
 
