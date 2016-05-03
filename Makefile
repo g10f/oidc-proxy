@@ -1,12 +1,12 @@
 
 NAME=keycloak-proxy
 AUTHOR=gambol99
-HARDWARE=$(shell uname -m)
 REGISTRY=docker.io
 GOVERSION=1.6.0
 SUDO=sudo
-GIT_COMMIT=$(shell git log --pretty=format:'%h' -n 1)
 ROOT_DIR=${PWD}
+HARDWARE=$(shell uname -m)
+GIT_SHA=$(shell git --no-pager describe --tags --always --dirty)
 VERSION=$(shell awk '/version.*=/ { print $$3 }' doc.go | sed 's/"//g')
 DEPS=$(shell go list -f '{{range .TestImports}}{{.}} {{end}}' ./...)
 PACKAGES=$(shell go list ./...)
@@ -19,6 +19,9 @@ default: build
 golang:
 	@echo "--> Go Version"
 	@go version
+
+version:
+	@sed -i "s/const gitSHA =.*/const gitSHA = \"${GIT_SHA}\"/" doc.go
 
 build:
 	@echo "--> Compiling the project"

@@ -27,17 +27,17 @@ import (
 //
 // dropCookie drops a cookie into the response
 //
-func dropCookie(cx *gin.Context, name, value string, expires time.Time, secure bool) {
+func dropCookie(cx *gin.Context, name, value string, duration time.Duration, secure bool) {
 	cookie := &http.Cookie{
-		Name:     name,
-		Domain:   strings.Split(cx.Request.Host, ":")[0],
-		Path:     "/",
+		Name:   name,
+		Domain: strings.Split(cx.Request.Host, ":")[0],
+		Path:   "/",
 		HttpOnly: true,
-		Secure:   secure,
-		Value:    value,
+		Secure: secure,
+		Value:  value,
 	}
-	if !expires.IsZero() {
-		cookie.Expires = expires
+	if duration != 0 {
+		cookie.Expires = time.Now().Add(duration)
 	}
 
 	http.SetCookie(cx.Writer, cookie)
@@ -46,15 +46,15 @@ func dropCookie(cx *gin.Context, name, value string, expires time.Time, secure b
 //
 // dropAccessTokenCookie drops a access token cookie into the response
 //
-func dropAccessTokenCookie(cx *gin.Context, token jose.JWT, secure bool) {
-	dropCookie(cx, cookieAccessToken, token.Encode(), time.Time{}, secure)
+func dropAccessTokenCookie(cx *gin.Context, token jose.JWT, duration time.Duration, secure bool) {
+	dropCookie(cx, cookieAccessToken, token.Encode(), duration, secure)
 }
 
 //
 // dropRefreshTokenCookie drops a refresh token cookie into the response
 //
-func dropRefreshTokenCookie(cx *gin.Context, token string, expires time.Time, secure bool) {
-	dropCookie(cx, cookieRefreshToken, token, expires, secure)
+func dropRefreshTokenCookie(cx *gin.Context, token string, duration time.Duration, secure bool) {
+	dropCookie(cx, cookieRefreshToken, token, duration, secure)
 }
 
 //
@@ -69,12 +69,12 @@ func clearAllCookies(cx *gin.Context, secure bool) {
 // clearRefreshSessionCookie clears the session cookie
 //
 func clearRefreshTokenCookie(cx *gin.Context, secure bool) {
-	dropCookie(cx, cookieRefreshToken, "", time.Now().Add(-1*time.Hour), secure)
+	dropCookie(cx, cookieRefreshToken, "", time.Duration(-10*time.Hour), secure)
 }
 
 //
 // clearAccessTokenCookie clears the session cookie
 //
 func clearAccessTokenCookie(cx *gin.Context, secure bool) {
-	dropCookie(cx, cookieAccessToken, "", time.Now().Add(-1*time.Hour), secure)
+	dropCookie(cx, cookieAccessToken, "", time.Duration(-10*time.Hour), secure)
 }
