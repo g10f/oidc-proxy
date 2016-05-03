@@ -342,11 +342,10 @@ func (r *oauthProxy) proxyHandler(cx *gin.Context) {
 	// step: retrieve the user context if any
 	if user, found := cx.Get(userContextName); found {
 		id := user.(*userContext)
-		cx.Request.Header.Add("X-Auth-UserId", id.id)
-		cx.Request.Header.Add("X-Auth-Subject", id.preferredName)
-		cx.Request.Header.Add("X-Auth-Username", id.name)
+		cx.Request.Header.Add("X-Auth-Sub", id.id)
+		cx.Request.Header.Add("X-Auth-Name", id.name)
 		cx.Request.Header.Add("X-Auth-Email", id.email)
-		cx.Request.Header.Add("X-Auth-ExpiresIn", id.expiresAt.String())
+		cx.Request.Header.Add("X-Auth-Exp", id.expiresAt.String())
 		cx.Request.Header.Add("X-Auth-Token", id.token.Encode())
 		cx.Request.Header.Add("X-Auth-Roles", strings.Join(id.roles, ","))
 	}

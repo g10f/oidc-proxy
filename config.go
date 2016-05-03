@@ -37,12 +37,10 @@ func newDefaultConfig() *Config {
 		TagData:               make(map[string]string, 0),
 		ClaimsMatch:           make(map[string]string, 0),
 		Header:                make(map[string]string, 0),
-		SecureCookie:          true,
 		CrossOrigin:           CORS{},
 		SkipUpstreamTLSVerify: true,
-		SecureCookie:          true,
-		ForbiddenPage: "templates/forbidden.html.tmpl",
-		Resources: []*Resource{&Resource{URL: "/"}},
+		ForbiddenPage:         "templates/forbidden.html.tmpl",
+		Resources:             []*Resource{&Resource{URL: "/"}},
 	}
 }
 
@@ -215,9 +213,6 @@ func readOptions(cx *cli.Context, config *Config) (err error) {
 	}
 	if cx.IsSet("verbose") {
 		config.Verbose = cx.Bool("verbose")
-	}
-	if cx.IsSet("secure-cookie") {
-		config.SecureCookie = cx.Bool("secure-cookie")
 	}
 	if cx.IsSet("scope") {
 		config.Scopes = cx.StringSlice("scope")
@@ -451,10 +446,6 @@ func getOptions() []cli.Flag {
 		cli.BoolFlag{
 			Name:  "verbose",
 			Usage: "switch on debug / verbose logging",
-		},
-		cli.BoolFlag{
-			Name:  "secure-cookie",
-			Usage: "set to false for testing on non https servers",
 		},
 	}
 }

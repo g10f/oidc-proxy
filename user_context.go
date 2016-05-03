@@ -35,7 +35,7 @@ type userContext struct {
 	// a name of the user
 	name string
 	// the preferred name
-	preferredName string
+	//preferredName string
 	// the expiration of the access token
 	expiresAt time.Time
 	// a set of roles associated
@@ -67,10 +67,10 @@ func extractIdentity(token jose.JWT) (*userContext, error) {
 	}
 
 	// step: ensure we have and can extract the preferred name of the user, if not, we set to the ID
-	preferredName, found, err := claims.StringClaim(claimPreferredName)
+	name, found, err := claims.StringClaim(claimName)
 	if err != nil || !found {
-		// choice: set the preferredName to the Email if claim not found
-		preferredName = identity.Email
+		// choice: set the name to the Email if claim not found
+		name = identity.Email
 	}
 
 	// step: retrieve the audience from access token
@@ -86,16 +86,36 @@ func extractIdentity(token jose.JWT) (*userContext, error) {
 		list = strings.Split(roles, " ")
 	}
 
+	// step: extract the realm roles
+	if realmRoles, found := claims[claimRealmAccess].(map[string]interface{}); found {
+		if roles, found := realmRoles[claimResourceRoles]; found {
+			for _, r := range roles.([]interface{}) {
+				list = append(list, fmt.Sprintf("%s", r))
+			}
+		}
+	}
+
+	// step: extract the roles from the access token
+	if accesses, found := claims[claimResourceAccess].(map[string]interface{}); found {
+		for roleName, roleList := range accesses {
+			scopes := roleList.(map[string]interface{})
+			if roles, found := scopes[claimResourceRoles]; found {
+				for _, r := range roles.([]interface{}) {
+					list = append(list, fmt.Sprintf("%s:%s", roleName, r))
+				}
+			}
+		}
+	}
+
 	return &userContext{
-		id:            identity.ID,
-		name:          preferredName,
-		audience:      audience,
-		preferredName: preferredName, // TODO: remove
-		email:         identity.Email,
-		expiresAt:     identity.ExpiresAt,
-		roles:         list,
-		token:         token,
-		claims:        claims,
+		id:        identity.ID,
+		name:      name,
+		audience:  audience,
+		email:     identity.Email,
+		expiresAt: identity.ExpiresAt,
+		roles:     list,
+		token:     token,
+		claims:    claims,
 	}, nil
 }
 
@@ -135,5 +155,5 @@ func (r userContext) isBearer() bool {
 // String returns a string representation of the user context
 //
 func (r userContext) String() string {
-	return fmt.Sprintf("user: %s, expires: %s, roles: %s", r.preferredName, r.expiresAt.String(), strings.Join(r.roles, ","))
+	return fmt.Sprintf("user: %s, expires: %s, roles: %s", r.name, r.expiresAt.String(), strings.Join(r.roles, ","))
 }

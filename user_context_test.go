@@ -155,7 +155,7 @@ func TestGetUserContext(t *testing.T) {
 	assert.NotNil(t, context)
 	assert.Equal(t, "1e11e539-8256-4b3b-bda8-cc0d56cddb48", context.id)
 	assert.Equal(t, "gambol99@gmail.com", context.email)
-	assert.Equal(t, "rjayawardene", context.preferredName)
+	assert.Equal(t, "Rohith Jayawardene", context.name)
 	roles := []string{"openvpn:dev-vpn"}
 	if !reflect.DeepEqual(context.roles, roles) {
 		t.Errorf("the claims are not the same, %v <-> %v", context.roles, roles)
@@ -168,7 +168,7 @@ func TestGetUserRealmRoleContext(t *testing.T) {
 	assert.NotNil(t, context)
 	assert.Equal(t, "1e11e539-8256-4b3b-bda8-cc0d56cddb48", context.id)
 	assert.Equal(t, "gambol99@gmail.com", context.email)
-	assert.Equal(t, "rjayawardene", context.preferredName)
+	assert.Equal(t, "Rohith Jayawardene", context.name)
 	roles := []string{"dsp-dev-vpn", "vpn-user", "dsp-prod-vpn", "openvpn:dev-vpn"}
 	if !reflect.DeepEqual(context.roles, roles) {
 		t.Errorf("the claims are not the same, %v <-> %v", context.roles, roles)

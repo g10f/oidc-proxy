@@ -74,7 +74,7 @@ func newProxy(cfg *Config) (*oauthProxy, error) {
 	if cfg.Verbose {
 		log.SetLevel(log.DebugLevel)
 	} else {
-		gin.SetMode(gin.ReleaseMode)  // default is DebugMode
+		gin.SetMode(gin.ReleaseMode) // default is DebugMode
 	}
 
 	log.Infof("starting %s, author: %s, version: %s, ", prog, author, version)

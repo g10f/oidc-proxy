@@ -42,9 +42,12 @@ const (
 	logoutURL        = "/logout"
 	loginURL         = "/login"
 
-	claimPreferredName = "name"
-	claimAudience      = "aud"
-	claimRoles         = "roles"
+	claimName           = "name"
+	claimAudience       = "aud"
+	claimRoles          = "roles"
+	claimResourceAccess = "resource_access"
+	claimRealmAccess    = "realm_access"
+	claimResourceRoles  = "roles"
 )
 
 var (
