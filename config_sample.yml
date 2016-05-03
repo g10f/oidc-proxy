@@ -1,5 +1,5 @@
 # is the url for retrieve the openid configuration - normally the <server>/.well-known/openid-configuration
-discovery-url: https://sso.dwbn.org/.well-known/openid-configuration
+discovery-url: https://sso.example.org/.well-known/openid-configuration
 # the client id for the 'client' application
 clientid: <CLIENT_ID>
 # the secret associated to the 'client' application
